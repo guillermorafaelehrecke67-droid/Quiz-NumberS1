@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Quiz - Sistemas Lógicos</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body { font-family: 'Segoe UI', Tahoma, sans-serif; margin: 20px; background: #f4f6f9; color: #333; }
+    h1 { text-align: center; color: #2c3e50; }
+
+    #attemptBox {
+      text-align: center;
+      font-weight: bold;
+      margin-bottom: 20px;
+      font-size: 1.2em;
+      color: #2c3e50;
+    }
+
+    .question { margin-bottom: 20px; padding: 15px; background: #fff; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+    .question.error { border: 2px solid #e74c3c; }
+
+    .question p { font-weight: bold; color: #34495e; }
+    .question.error p { color: #e74c3c; }
+
+    label { display: block; margin: 5px 0; }
+    input.wrong { outline: 2px solid #e74c3c; }
+
+    button { padding: 10px 20px; background: #3498db; color: #fff; border: none; border-radius: 5px; cursor: pointer; margin-top: 10px; }
+    button:hover { background: #2980b9; }
+
+    #result { font-weight: bold; margin-top: 20px; font-size: 1.2em; text-align: center; }
+    .hint { display: none; margin-top: 10px; font-size: 0.95em; color: #7f8c8d; background: #ecf0f1; padding: 8px; border-radius: 5px; }
+    #retryBtn { display: none; margin: 20px auto; display: block; }
+  </style>
+</head>
+<body>
+
+  <h1>Quiz: Sistemas Lógicos y Numeración</h1>
+  <div id="attemptBox">Intento #1</div>
+
+  <form id="quizForm">
+
+    <div class="question" id="q1Box">
+      <p>1. ¿Qué símbolos conoces para representar el número 5?</p>
+      <label><input type="checkbox" name="q1" value="correct"> 5 (arábigo)</label>
+      <label><input type="checkbox" name="q1" value="correct"> V (romano)</label>
+      <label><input type="checkbox" name="q1" value="wrong"> Z</label>
+      <button type="button" onclick="showHint('hint1')">Mostrar pista</button>
+      <div id="hint1" class="hint">Piensa en los números que ves en tu vida diaria y en los relojes antiguos.</div>
+    </div>
+
+    <div class="question" id="q2Box">
+      <p>2. ¿Cuál es la base que usamos en la vida cotidiana?</p>
+      <label><input type="radio" name="q2" value="correct"> Base 10</label>
+      <label><input type="radio" name="q2" value="wrong"> Base 2</label>
+      <label><input type="radio" name="q2" value="wrong"> Base 16</label>
+      <button type="button" onclick="showHint('hint2')">Mostrar pista</button>
+      <div id="hint2" class="hint">Recuerda que contamos con los dígitos del 0 al 9.</div>
+    </div>
+
+    <div class="question" id="q3Box">
+      <p>3. ¿Cuál es la base utilizada por las computadoras?</p>
+      <label><input type="radio" name="q3" value="wrong"> Base 10</label>
+      <label><input type="radio" name="q3" value="correct"> Base 2</label>
+      <label><input type="radio" name="q3" value="wrong"> Base 16</label>
+      <button type="button" onclick="showHint('hint3')">Mostrar pista</button>
+      <div id="hint3" class="hint">Piensa en el lenguaje de unos y ceros.</div>
+    </div>
+
+    <div class="question" id="q4Box">
+      <p>4. Convierte el número decimal 13 a binario:</p>
+      <label><input type="radio" name="q4" value="correct"> 1101</label>
+      <label><input type="radio" name="q4" value="wrong"> 1010</label>
+      <label><input type="radio" name="q4" value="wrong"> 1110</label>
+      <button type="button" onclick="showHint('hint4')">Mostrar pista</button>
+      <div id="hint4" class="hint">Suma 8 + 4 + 1 para llegar al resultado.</div>
+    </div>
+
+    <div class="question" id="q5Box">
+      <p>5. Convierte el número binario 1010 a decimal:</p>
+      <label><input type="radio" name="q5" value="wrong"> 8</label>
+      <label><input type="radio" name="q5" value="correct"> 10</label>
+      <label><input type="radio" name="q5" value="wrong"> 12</label>
+      <button type="button" onclick="showHint('hint5')">Mostrar pista</button>
+      <div id="hint5" class="hint">Piensa en las posiciones: 8 + 2.</div>
+    </div>
+
+    <div class="question" id="q6Box">
+      <p>6. Convierte el número hexadecimal 2A a decimal:</p>
+      <label><input type="radio" name="q6" value="wrong"> 32</label>
+      <label><input type="radio" name="q6" value="correct"> 42</label>
+      <label><input type="radio" name="q6" value="wrong"> 52</label>
+      <button type="button" onclick="showHint('hint6')">Mostrar pista</button>
+      <div id="hint6" class="hint">Recuerda que A equivale a 10, entonces 2×16 + 10.</div>
+    </div>
+
+    <button type="button" onclick="calculateScore()">Calcular Puntaje</button>
+  </form>
+
+  <div id="result"></div>
+  <button id="retryBtn" type="button" onclick="retryQuiz()">Reintentar</button>
+
+  <script>
+    let attempts = 1;
+
+    function showHint(id) {
+      document.getElementById(id).style.display = 'block';
+    }
+
+    function clearErrors() {
+      document.querySelectorAll('.question').forEach(q => q.classList.remove('error'));
+      document.querySelectorAll('input').forEach(i => i.classList.remove('wrong'));
+    }
+
+    function markError(questionId, inputs) {
+      document.getElementById(questionId).classList.add('error');
+      inputs.forEach(i => {
+        if (i.checked && i.value === 'wrong') {
+          i.classList.add('wrong');
+        }
+      });
+    }
+
+    function calculateScore() {
+      clearErrors();
+      let score = 0;
+      let total = 6;
+
+      // Pregunta 1
+      let q1Inputs = document.querySelectorAll('input[name="q1"]');
+      let q1Checked = document.querySelectorAll('input[name="q1"]:checked');
+      let correctQ1 = Array.from(q1Checked).filter(a => a.value === "correct").length;
+      let wrongQ1 = Array.from(q1Checked).filter(a => a.value === "wrong").length;
+      if (correctQ1 === 2 && wrongQ1 === 0) {
+        score++;
+      } else {
+        markError('q1Box', q1Inputs);
+      }
+
+      // Preguntas 2 a 6
+      for (let i = 2; i <= 6; i++) {
+        let inputs = document.querySelectorAll('input[name="q' + i + '"]');
+        let answer = document.querySelector('input[name="q' + i + '"]:checked');
+        if (answer && answer.value === "correct") {
+          score++;
+        } else {
+          markError('q' + i + 'Box', inputs);
+        }
+      }
+
+      let resultText = "Intento #" + attempts + " → Tu puntaje es: " + score + " de " + total;
+      document.getElementById("result").innerHTML = resultText;
+
+      document.getElementById("attemptBox").innerText = "Intento #" + attempts;
+
+      let retryBtn = document.getElementById("retryBtn");
+      retryBtn.style.display = "block";
+    }
+
+    function retryQuiz() {
+      attempts++; // Aumenta SOLO al reiniciar
+      document.getElementById("attemptBox").innerText = "Intento #" + attempts;
+
+      document.getElementById("quizForm").reset();
+      document.getElementById("result").innerHTML = "";
+      clearErrors();
+
+      let hints = document.querySelectorAll('.hint');
+      hints.forEach(h => h.style.display = 'none');
+    }
+  </script>
+</body>
+</html>
